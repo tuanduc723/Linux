@@ -1,9 +1,8 @@
 import pickle
 import numpy as np
-
-from sklearn.model_selection import cross_val_score
+import matplotlib.pyplot as plt
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 # Hàm tính toán độ chính xác
@@ -19,7 +18,6 @@ labels = np.asarray(data_dict['labels'])
 x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, shuffle=True, stratify=labels)
 
 # Tạo và huấn luyện model
-# model = RandomForestClassifier()
 model = RandomForestClassifier(
     n_estimators=5,       # Giảm số cây
     max_depth=3,          # Giới hạn độ sâu của mỗi cây
@@ -32,11 +30,24 @@ model.fit(x_train, y_train)
 # Dự đoán
 y_predict = model.predict(x_test)
 
-# Tính độ chính xác
+# Cross-validation và tính độ chính xác
 scores = cross_val_score(model, data, labels, cv=5)  # 5-fold cross-validation
-print("Accuracy for each fold:", scores)
-print("Average accuracy:", np.mean(scores) * 100)
+average_accuracy = np.mean(scores) * 100
 
+# In độ chính xác từng fold và độ chính xác trung bình
+print("Accuracy for each fold:", scores)
+print("Average accuracy:", average_accuracy)
+
+# Vẽ biểu đồ
+plt.figure(figsize=(10, 5))
+plt.bar(range(1, 6), scores * 100, label="Accuracy for each fold", color='skyblue')
+plt.axhline(y=average_accuracy, color='orange', linestyle='--', label="Average Accuracy")
+plt.xlabel("Fold")
+plt.ylabel("Accuracy (%)")
+plt.title("Accuracy for each fold and Average Accuracy")
+plt.legend()
+plt.xticks(range(1, 6))
+plt.show()
 
 # Lưu model
 with open('model.p', 'wb') as f:
